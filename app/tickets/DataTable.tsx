@@ -1,4 +1,6 @@
 import { Ticket } from "@prisma/client";
+import TicketStatusBadge from "@/Components/TicketStatusBadge";
+import TicketPriority from "@/Components/TicketPriority";
 import {
   Table,
   TableHeader,
@@ -30,8 +32,16 @@ const DataTable = ({ tickets }: Props) => {
               ? tickets.map((ticket) => (
                   <TableRow key={ticket.id} data-href="/">
                     <TableCell>{ticket.title}</TableCell>
-                    <TableCell>{ticket.status}</TableCell>
-                    <TableCell>{ticket.priority}</TableCell>
+                    <div className="flex justify-center">
+                      <TableCell>
+                        <TicketStatusBadge status={ticket.status} />
+                      </TableCell>
+                    </div>
+                    <div className="flex justify-center">
+                      <TableCell>
+                        <TicketPriority priority={ticket.priority} />
+                      </TableCell>
+                    </div>
                     <TableCell>
                       {ticket.createdAT.toLocaleDateString("en-GB", {
                         year: "2-digit",
