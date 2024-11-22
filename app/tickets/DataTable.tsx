@@ -13,12 +13,11 @@ interface Props {
 }
 
 const DataTable = ({ tickets }: Props) => {
-  console.log(tickets);
   return (
     <div className="w-full mt-5">
       <div className="rounded-md sm:border">
         <Table>
-          <TableHeader>
+          <TableHeader className="flex justify-center">
             <TableRow>
               <TableHead>Title</TableHead>
               <TableHead>Status</TableHead>
@@ -34,7 +33,14 @@ const DataTable = ({ tickets }: Props) => {
                     <TableCell>{ticket.status}</TableCell>
                     <TableCell>{ticket.priority}</TableCell>
                     <TableCell>
-                      {ticket.createdAT.toLocaleDateString()}
+                      {ticket.createdAT.toLocaleDateString("en-GB", {
+                        year: "2-digit",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
                     </TableCell>
                   </TableRow>
                 ))
