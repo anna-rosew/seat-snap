@@ -12,6 +12,7 @@ import TicketStatusBadge from "@/components/TicketStatusBadge";
 import TicketPriority from "@/components/TicketPriority";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import ReactMarkdown from "react-markdown";
 
 interface Props {
   ticket: Ticket;
@@ -32,7 +33,9 @@ const TicketDetail = ({ ticket }: Props) => {
               Created: {dayjs(ticket.createdAT).format("DD/MM/YY hh:mm A")}
             </CardDescription>
           </CardHeader>
-          <CardContent>{ticket.description}</CardContent>
+          <CardContent className="prose dark:prose-invert">
+            <ReactMarkdown>{ticket.description}</ReactMarkdown>
+          </CardContent>
           <CardFooter>
             Updated: {dayjs(ticket.updatedAT).format("DD/MM/YY hh:mm A")}
           </CardFooter>
