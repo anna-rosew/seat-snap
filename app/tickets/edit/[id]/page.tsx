@@ -1,6 +1,6 @@
 import React from "react";
 import prisma from "@/prisma/db";
-import TicketForm from "@/Components/TicketForm";
+import TicketForm from "@/components/TicketForm";
 
 interface Props {
   params: { id: string };

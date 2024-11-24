@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 
-const TicketForm = dynamic(() => import("@/Components/TicketForm"), {
+const TicketForm = dynamic(() => import("@/components/TicketForm"), {
   ssr: false,
 });
 

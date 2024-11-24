@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ThemeProvider } from "@/Components/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default function ThemeProviderWrapper({
   children,
