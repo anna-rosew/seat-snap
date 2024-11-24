@@ -1,8 +1,15 @@
-import React from "react";
-import TicketForm from "@/Components/TicketForm"
+import dynamic from "next/dynamic";
+
+const TicketForm = dynamic(() => import("@/Components/TicketForm"), {
+  ssr: false,
+});
 
 const NewTicket = () => {
-  return <div><TicketForm/></div>;
+  return (
+    <div>
+      <TicketForm />
+    </div>
+  );
 };
 
 export default NewTicket;
