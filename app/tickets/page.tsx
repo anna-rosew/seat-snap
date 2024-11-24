@@ -10,7 +10,7 @@ const Tickets = async () => {
   return (
     <div>
       <Link
-        href="/tickets/new"
+        href="/tickets/New"
         className={buttonVariants({ variant: "default" })}
       >
         New Ticket

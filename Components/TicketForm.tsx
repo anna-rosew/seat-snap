@@ -1,25 +1,25 @@
 "use client";
-
-import { Controller, useForm } from "react-hook-form";
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
+import { ticketSchema } from "@/ValidationSchemas/ticket";
+import { z } from "zod";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "./ui/input";
+import SimpleMDE from "react-simplemde-editor";
+import "easymde/dist/easymde.min.css";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@radix-ui/react-select";
+} from "./ui/select";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { ticketSchema } from "@/ValidationSchemas/ticket";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import SimpleMDE from "react-simplemde-editor";
-import "easymde/dist/easymde.min.css";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Ticket } from "@prisma/client";
+import dayjs from "dayjs"; // Importing dayjs for date formatting
 
 type TicketFormData = z.infer<typeof ticketSchema>;
 
@@ -27,38 +27,46 @@ interface Props {
   ticket?: Ticket;
 }
 
-const TicketForm: React.FC<Props> = ({ ticket }) => {
+interface FormattedTicket extends Ticket {
+  formattedDate?: string; // Add formattedDate to the type, optional
+}
+
+const TicketForm = ({ ticket }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [formattedTicket, setFormattedTicket] =
+    useState<FormattedTicket | null>(ticket ? { ...ticket } : null); // Safe initialization
   const router = useRouter();
 
   const form = useForm<TicketFormData>({
     resolver: zodResolver(ticketSchema),
-    defaultValues: {
-      title: ticket?.title || "",
-      description: ticket?.description || "",
-      status: ticket?.status || "OPEN",
-      priority: ticket?.priority || "LOW",
-    },
   });
 
-  async function onSubmit(values: TicketFormData) {
+  useEffect(() => {
+    if (ticket) {
+      setFormattedTicket({
+        ...ticket,
+        formattedDate: dayjs(ticket.createdAT).format("DD/MM/YY hh:mm A"), // Format date if ticket exists
+      });
+    }
+  }, [ticket]); // Re-run when `ticket` changes
+
+  async function onSubmit(values: z.infer<typeof ticketSchema>) {
     try {
       setIsSubmitting(true);
       setError("");
 
       if (ticket) {
-        await axios.patch(`/api/tickets/${ticket.id}`, values);
+        await axios.patch("/api/tickets/" + ticket.id, values);
       } else {
         await axios.post("/api/tickets", values);
       }
-
       setIsSubmitting(false);
       router.push("/tickets");
       router.refresh();
     } catch (error) {
-      console.error(error);
-      setError("Unknown error occurred");
+      console.log(error);
+      setError("Unknown Error Occurred.");
       setIsSubmitting(false);
     }
   }
@@ -73,6 +81,7 @@ const TicketForm: React.FC<Props> = ({ ticket }) => {
           <FormField
             control={form.control}
             name="title"
+            defaultValue={ticket?.title}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Ticket Title</FormLabel>
@@ -84,30 +93,30 @@ const TicketForm: React.FC<Props> = ({ ticket }) => {
           />
           <Controller
             name="description"
+            defaultValue={ticket?.description}
             control={form.control}
             render={({ field }) => (
-              <SimpleMDE
-                {...field}
-                onChange={(value) => field.onChange(value)}
-                value={field.value}
-                placeholder="Description"
-              />
+              <SimpleMDE placeholder="Description" {...field} />
             )}
           />
           <div className="flex w-full space-x-4">
             <FormField
               control={form.control}
               name="status"
+              defaultValue={ticket?.status}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
                   <Select
-                    onValueChange={(value) => field.onChange(value)}
+                    onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Status..." />
+                        <SelectValue
+                          placeholder="Status..."
+                          defaultValue={ticket?.status}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -122,16 +131,20 @@ const TicketForm: React.FC<Props> = ({ ticket }) => {
             <FormField
               control={form.control}
               name="priority"
+              defaultValue={ticket?.priority}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Priority</FormLabel>
                   <Select
-                    onValueChange={(value) => field.onChange(value)}
+                    onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Priority..." />
+                        <SelectValue
+                          placeholder="Priority..."
+                          defaultValue={ticket?.priority}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -149,7 +162,13 @@ const TicketForm: React.FC<Props> = ({ ticket }) => {
           </Button>
         </form>
       </Form>
-      {error && <p className="text-destructive">{error}</p>}
+      <p className="text-destructive">{error}</p>
+
+      {formattedTicket && formattedTicket.formattedDate && (
+        <p className="text-sm text-muted">
+          Created at: {formattedTicket.formattedDate}
+        </p>
+      )}
     </div>
   );
 };

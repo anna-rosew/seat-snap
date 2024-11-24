@@ -1,4 +1,5 @@
 import { Ticket } from "@prisma/client";
+import dayjs from "dayjs";
 import TicketStatusBadge from "@/Components/TicketStatusBadge";
 import TicketPriority from "@/Components/TicketPriority";
 import {
@@ -19,7 +20,7 @@ const DataTable = ({ tickets }: Props) => {
     <div className="w-full mt-5">
       <div className="rounded-md sm:border">
         <Table>
-          <TableHeader className="flex justify-center">
+          <TableHeader>
             <TableRow>
               <TableHead>Title</TableHead>
               <TableHead>Status</TableHead>
@@ -32,25 +33,14 @@ const DataTable = ({ tickets }: Props) => {
               ? tickets.map((ticket) => (
                   <TableRow key={ticket.id} data-href="/">
                     <TableCell>{ticket.title}</TableCell>
-                    <div className="flex justify-center">
-                      <TableCell>
-                        <TicketStatusBadge status={ticket.status} />
-                      </TableCell>
-                    </div>
-                    <div className="flex justify-center">
-                      <TableCell>
-                        <TicketPriority priority={ticket.priority} />
-                      </TableCell>
-                    </div>
+                    <TableCell className="justify-center">
+                      <TicketStatusBadge status={ticket.status} />
+                    </TableCell>
+                    <TableCell className="justify-center">
+                      <TicketPriority priority={ticket.priority} />
+                    </TableCell>
                     <TableCell>
-                      {ticket.createdAT.toLocaleDateString("en-GB", {
-                        year: "2-digit",
-                        month: "2-digit",
-                        day: "2-digit",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
+                      {dayjs(ticket.createdAT).format("DD/MM/YY hh:mm A")}
                     </TableCell>
                   </TableRow>
                 ))
