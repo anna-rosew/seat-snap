@@ -4,42 +4,50 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
 import StatusFilter from "@/components/StatusFilter";
-import { Status } from "@prisma/client";
+import { Status, Ticket } from "@prisma/client";
 
-interface SearchParams {
+// Interface for search params coming from the URL
+export interface SearchParams {
   status: Status;
   page: string;
+  orderBy: keyof Ticket;
 }
 
 const Tickets = async ({ searchParams }: { searchParams: SearchParams }) => {
+  // Await searchParams to access its properties properly
+  const searchParamsResolved = await searchParams;
+
+  // Destructure after resolving searchParams
+  const {
+    page = "1",
+    status = "OPEN", // Default to OPEN if no status is passed
+    orderBy = "createdAT", // Default to createdAT if no orderBy is passed
+  } = searchParamsResolved || {};
+
   const pageSize = 10;
-  const page = parseInt(searchParams.page) || 1;
+  const pageNum = parseInt(page, 10);
 
-  //to pass an error if its an invlaid status
+  // Handle invalid status (fallback to OPEN if not valid)
   const statuses = Object.values(Status);
+  const validStatus = statuses.includes(status) ? status : "OPEN"; // Fallback to OPEN if invalid
 
-  const status = statuses.includes(searchParams.status)
-    ? searchParams.status
-    : undefined;
-
+  // Set the filter conditions for the query
   let where = {};
-
-  if (status) {
-    where = {
-      status,
-    };
+  if (validStatus) {
+    where = { status: validStatus };
   } else {
-    where = {
-      NOT: [{ status: "CLOSED" as Status }],
-    };
+    where = { NOT: [{ status: "CLOSED" as Status }] };
   }
 
+  // Count the tickets for pagination
   const ticketCount = await prisma.ticket.count({ where });
 
+  // Fetch the tickets based on the pagination and filters
   const tickets = await prisma.ticket.findMany({
     where,
     take: pageSize,
-    skip: (page - 1) * pageSize,
+    skip: (pageNum - 1) * pageSize,
+    orderBy: orderBy ? { [orderBy]: "asc" } : undefined, // Optional order by query
   });
 
   return (
@@ -51,13 +59,18 @@ const Tickets = async ({ searchParams }: { searchParams: SearchParams }) => {
         >
           New Ticket
         </Link>
+        {/* Render StatusFilter here */}
         <StatusFilter />
       </div>
-      <DataTable tickets={tickets} />
+
+      {/* Pass tickets and resolved searchParams to DataTable */}
+      <DataTable tickets={tickets} searchParams={searchParamsResolved} />
+
+      {/* Pagination component to navigate through pages */}
       <Pagination
         itemCount={ticketCount}
         pageSize={pageSize}
-        currentPage={page}
+        currentPage={pageNum}
       />
     </div>
   );

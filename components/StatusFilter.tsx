@@ -1,4 +1,4 @@
-"use client";
+"use client"; // Ensure this file is treated as a client component
 
 import {
   Select,
@@ -8,12 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@radix-ui/react-select";
-import { useRouter, useSearchParams } from "next/navigation";
-import React from "react";
+import { useRouter } from "next/navigation"; // Use next/navigation for client-side routing
 
-//define statuses and define how we want them to be displayed
-const statuses: { label: string; value?: string }[] = [
-  { label: "Open / Started" },
+const statuses: { label: string; value: string }[] = [
   { label: "Open", value: "OPEN" },
   { label: "Started", value: "STARTED" },
   { label: "Closed", value: "CLOSED" },
@@ -21,20 +18,19 @@ const statuses: { label: string; value?: string }[] = [
 
 const StatusFilter = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(window.location.search);
+  const selectedStatus = searchParams.get("status") || "";
+
+  const handleChange = (status: string) => {
+    searchParams.set("status", status);
+    router.push(`/tickets?${searchParams.toString()}`);
+  };
 
   return (
     <div>
       <Select
-        defaultValue={searchParams.get("status") || ""}
-        onValueChange={(status) => {
-          const params = new URLSearchParams();
-
-          if (status) params.append("status", status);
-
-          const query = params.size ? `?${params.toString()}` : "0";
-          router.push(`./tickets${query}`);
-        }}
+        value={selectedStatus} // Control the select input with the selected status
+        onValueChange={handleChange} // Update the URL when the value changes
       >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Filter by Status..." />
@@ -42,7 +38,7 @@ const StatusFilter = () => {
         <SelectContent>
           <SelectGroup>
             {statuses.map((status) => (
-              <SelectItem key={status.value || "0"} value={status.value || "0"}>
+              <SelectItem key={status.value} value={status.value}>
                 {status.label}
               </SelectItem>
             ))}
