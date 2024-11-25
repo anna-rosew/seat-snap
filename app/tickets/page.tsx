@@ -6,7 +6,6 @@ import Pagination from "@/components/Pagination";
 import StatusFilter from "@/components/StatusFilter";
 import { Status, Ticket } from "@prisma/client";
 
-// Interface for search params coming from the URL
 export interface SearchParams {
   status: Status;
   page: string;
@@ -14,41 +13,44 @@ export interface SearchParams {
 }
 
 const Tickets = async ({ searchParams }: { searchParams: SearchParams }) => {
-  // Await searchParams to access its properties properly
-  const searchParamsResolved = await searchParams;
-
-  // Destructure after resolving searchParams
-  const {
-    page = "1",
-    status = "OPEN", // Default to OPEN if no status is passed
-    orderBy = "createdAT", // Default to createdAT if no orderBy is passed
-  } = searchParamsResolved || {};
-
+  const query = { ...searchParams };
   const pageSize = 10;
-  const pageNum = parseInt(page, 10);
+  const page = parseInt(searchParams.page) || 1;
 
-  // Handle invalid status (fallback to OPEN if not valid)
+  //created at
+  const orderBy = searchParams.orderBy ? searchParams.orderBy : "createdAT";
+
   const statuses = Object.values(Status);
-  const validStatus = statuses.includes(status) ? status : "OPEN"; // Fallback to OPEN if invalid
+  const status = statuses.includes(searchParams.status)
+    ? searchParams.status
+    : undefined;
 
-  // Set the filter conditions for the query
   let where = {};
-  if (validStatus) {
-    where = { status: validStatus };
+
+  if (status) {
+    where = {
+      status,
+    };
   } else {
-    where = { NOT: [{ status: "CLOSED" as Status }] };
+    where = {
+      NOT: [{ status: "CLOSED" as Status }],
+    };
   }
 
-  // Count the tickets for pagination
   const ticketCount = await prisma.ticket.count({ where });
 
-  // Fetch the tickets based on the pagination and filters
   const tickets = await prisma.ticket.findMany({
     where,
+    orderBy: {
+      [orderBy]: "desc",
+    },
     take: pageSize,
-    skip: (pageNum - 1) * pageSize,
-    orderBy: orderBy ? { [orderBy]: "asc" } : undefined, // Optional order by query
+    skip: (page - 1) * pageSize,
   });
+
+  if (tickets.length === 0) {
+    // Optionally, handle when no tickets are found (e.g., show a "No tickets found" message)
+  }
 
   return (
     <div>
@@ -59,18 +61,13 @@ const Tickets = async ({ searchParams }: { searchParams: SearchParams }) => {
         >
           New Ticket
         </Link>
-        {/* Render StatusFilter here */}
         <StatusFilter />
       </div>
-
-      {/* Pass tickets and resolved searchParams to DataTable */}
-      <DataTable tickets={tickets} searchParams={searchParamsResolved} />
-
-      {/* Pagination component to navigate through pages */}
+      <DataTable tickets={tickets} searchParams={query} />
       <Pagination
         itemCount={ticketCount}
         pageSize={pageSize}
-        currentPage={pageNum}
+        currentPage={page}
       />
     </div>
   );

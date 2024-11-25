@@ -1,5 +1,7 @@
-"use client"; // Ensure this file is treated as a client component
+"use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
+import React from "react";
 import {
   Select,
   SelectContent,
@@ -7,10 +9,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@radix-ui/react-select";
-import { useRouter } from "next/navigation"; // Use next/navigation for client-side routing
+} from "./ui/select";
 
-const statuses: { label: string; value: string }[] = [
+const statuses: { label: string; value?: string }[] = [
+  { label: "Open / Started" },
   { label: "Open", value: "OPEN" },
   { label: "Started", value: "STARTED" },
   { label: "Closed", value: "CLOSED" },
@@ -18,34 +20,33 @@ const statuses: { label: string; value: string }[] = [
 
 const StatusFilter = () => {
   const router = useRouter();
-  const searchParams = new URLSearchParams(window.location.search);
-  const selectedStatus = searchParams.get("status") || "";
-
-  const handleChange = (status: string) => {
-    searchParams.set("status", status);
-    router.push(`/tickets?${searchParams.toString()}`);
-  };
+  const searchParams = useSearchParams();
 
   return (
-    <div>
-      <Select
-        value={selectedStatus} // Control the select input with the selected status
-        onValueChange={handleChange} // Update the URL when the value changes
-      >
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Filter by Status..." />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {statuses.map((status) => (
-              <SelectItem key={status.value} value={status.value}>
-                {status.label}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-    </div>
+    <Select
+      defaultValue={searchParams.get("status") || ""}
+      onValueChange={(status) => {
+        const params = new URLSearchParams();
+
+        if (status) params.append("status", status);
+
+        const query = params.size ? `?${params.toString()}` : "0";
+        router.push(`/tickets${query}`);
+      }}
+    >
+      <SelectTrigger className=" w-[200px]">
+        <SelectValue placeholder="Filter by Status..." />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          {statuses.map((status) => (
+            <SelectItem key={status.value || "0"} value={status.value || "0"}>
+              {status.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 };
 

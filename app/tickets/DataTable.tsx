@@ -1,16 +1,16 @@
-import { Ticket } from "@prisma/client";
-import Link from "next/link";
-import dayjs from "dayjs";
-import TicketStatusBadge from "@/components/TicketStatusBadge";
 import TicketPriority from "@/components/TicketPriority";
+import TicketStatusBadge from "@/components/TicketStatusBadge";
 import {
   Table,
-  TableHeader,
-  TableRow,
-  TableHead,
   TableBody,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+import { Ticket } from "@prisma/client";
+import Link from "next/link";
+import React from "react";
 import { ArrowDown } from "lucide-react";
 import { SearchParams } from "./page";
 
@@ -19,23 +19,7 @@ interface Props {
   searchParams: SearchParams;
 }
 
-const DataTable = async ({ tickets, searchParams }: Props) => {
-  // Await searchParams
-  const { orderBy, status, page } = await searchParams;
-
-  const buildQuery = (newOrderBy: string) => {
-    const queryParams = new URLSearchParams();
-    queryParams.set("orderBy", newOrderBy);
-
-    if (status) {
-      queryParams.set("status", status);
-    }
-
-    queryParams.set("page", String(page));
-
-    return queryParams.toString(); // Converts the query to a string that can be used in the Link
-  };
-
+const DataTable = ({ tickets, searchParams }: Props) => {
   return (
     <div className="w-full mt-5">
       <div className="rounded-md sm:border">
@@ -43,50 +27,79 @@ const DataTable = async ({ tickets, searchParams }: Props) => {
           <TableHeader>
             <TableRow>
               <TableHead>
-                <Link href={`./tickets?${buildQuery("title")}`}>Title</Link>
-                {orderBy === "title" && <ArrowDown className="inline p-1" />}
-              </TableHead>
-              <TableHead>
-                <Link href={`./tickets?${buildQuery("status")}`}>Status</Link>
-                {orderBy === "status" && <ArrowDown className="inline p-1" />}
+                <Link href={{ query: { ...searchParams, orderBy: "title" } }}>
+                  Title
+                </Link>
+                {"title" === searchParams.orderBy && (
+                  <ArrowDown className="inline p-1" />
+                )}
               </TableHead>
               <TableHead>
                 <div className="flex justify-center">
-                  <Link href={`./tickets?${buildQuery("priority")}`}>
-                    Priority
+                  <Link
+                    href={{ query: { ...searchParams, orderBy: "status" } }}
+                  >
+                    Status
                   </Link>
-                  {orderBy === "priority" && (
+                  {"status" === searchParams.orderBy && (
                     <ArrowDown className="inline p-1" />
                   )}
                 </div>
               </TableHead>
               <TableHead>
-                <Link href={`./tickets?${buildQuery("createdAT")}`}>
-                  Created at
+                <div className="flex justify-center">
+                  <Link
+                    href={{ query: { ...searchParams, orderBy: "priority" } }}
+                  >
+                    Priority
+                  </Link>
+                  {"priority" === searchParams.orderBy && (
+                    <ArrowDown className="inline p-1" />
+                  )}
+                </div>
+              </TableHead>
+              <TableHead>
+                <Link
+                  href={{ query: { ...searchParams, orderBy: "createdAt" } }}
+                >
+                  Created At
                 </Link>
-                {orderBy === "createdAT" && (
+                {"createdAT" === searchParams.orderBy && (
                   <ArrowDown className="inline p-1" />
                 )}
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tickets.map((ticket) => (
-              <TableRow key={ticket.id} data-href="/">
-                <TableCell>
-                  <Link href={`/tickets/${ticket.id}`}>{ticket.title}</Link>
-                </TableCell>
-                <TableCell className="justify-center">
-                  <TicketStatusBadge status={ticket.status} />
-                </TableCell>
-                <TableCell className="justify-center">
-                  <TicketPriority priority={ticket.priority} />
-                </TableCell>
-                <TableCell>
-                  {dayjs(ticket.createdAT).format("DD/MM/YY hh:mm A")}
-                </TableCell>
-              </TableRow>
-            ))}
+            {tickets
+              ? tickets.map((ticket) => (
+                  <TableRow key={ticket.id} data-href="/">
+                    <TableCell>
+                      <Link href={`/tickets/${ticket.id}`}>{ticket.title}</Link>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center">
+                        <TicketStatusBadge status={ticket.status} />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center">
+                        <TicketPriority priority={ticket.priority} />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {ticket.createdAT.toLocaleDateString("en-US", {
+                        year: "2-digit",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </TableCell>
+                  </TableRow>
+                ))
+              : null}
           </TableBody>
         </Table>
       </div>
