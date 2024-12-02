@@ -1,3 +1,4 @@
+import React from "react";
 import prisma from "@/prisma/db";
 import DataTable from "./DataTable";
 import Link from "next/link";
@@ -7,22 +8,28 @@ import StatusFilter from "@/components/StatusFilter";
 import { Status, Ticket } from "@prisma/client";
 
 export interface SearchParams {
-  status: Status;
   page: string;
+  status: string;
   orderBy: keyof Ticket;
 }
 
-const Tickets = async ({ searchParams }: { searchParams: SearchParams }) => {
-  const query = { ...searchParams };
+const Tickets = async ({
+  searchParams: searchParamsPromise,
+}: {
+  searchParams: Promise<SearchParams>;
+}) => {
+  const searchParams = await searchParamsPromise;
   const pageSize = 10;
-  const page = parseInt(searchParams.page) || 1;
+  const page = parseInt(searchParams?.page || "1", 10);
 
-  //created at
-  const orderBy = searchParams.orderBy ? searchParams.orderBy : "createdAT";
+  const orderBy = searchParams?.orderBy
+    ? (searchParams?.orderBy as keyof Ticket)
+    : "createdAt";
 
   const statuses = Object.values(Status);
-  const status = statuses.includes(searchParams.status)
-    ? searchParams.status
+
+  const status = statuses.includes(searchParams?.status as Status)
+    ? (searchParams.status as Status)
     : undefined;
 
   let where = {};
@@ -37,7 +44,9 @@ const Tickets = async ({ searchParams }: { searchParams: SearchParams }) => {
     };
   }
 
-  const ticketCount = await prisma.ticket.count({ where });
+  const ticketCount = await prisma.ticket.count({
+    where,
+  });
 
   const tickets = await prisma.ticket.findMany({
     where,
@@ -48,22 +57,19 @@ const Tickets = async ({ searchParams }: { searchParams: SearchParams }) => {
     skip: (page - 1) * pageSize,
   });
 
-  if (tickets.length === 0) {
-    // Optionally, handle when no tickets are found (e.g., show a "No tickets found" message)
-  }
-
+  // console.log(tickets)
   return (
     <div>
       <div className="flex gap-2">
         <Link
-          href="/tickets/New"
+          href="/tickets/new"
           className={buttonVariants({ variant: "default" })}
         >
           New Ticket
         </Link>
         <StatusFilter />
       </div>
-      <DataTable tickets={tickets} searchParams={query} />
+      <DataTable tickets={tickets} searchParams={searchParams} />
       <Pagination
         itemCount={ticketCount}
         pageSize={pageSize}

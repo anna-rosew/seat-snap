@@ -31,14 +31,14 @@ const TicketDetail = ({ ticket }: Props) => {
             </div>
             <CardTitle>{ticket.title}</CardTitle>
             <CardDescription>
-              Created: {dayjs(ticket.createdAT).format("DD/MM/YY hh:mm A")}
+              Created: {dayjs(ticket.createdAt).format("DD/MM/YY hh:mm A")}
             </CardDescription>
           </CardHeader>
           <CardContent className="prose dark:prose-invert">
             <ReactMarkdown>{ticket.description}</ReactMarkdown>
           </CardContent>
           <CardFooter>
-            Updated: {dayjs(ticket.updatedAT).format("DD/MM/YY hh:mm A")}
+            Updated: {dayjs(ticket.updatedAt).format("DD/MM/YY hh:mm A")}
           </CardFooter>
         </Card>
         <div className="mx-4 flex lg:flex-col lg:mx-0 gap-2">

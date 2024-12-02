@@ -35,7 +35,7 @@ const TicketForm = ({ ticket }: Props) => {
   const router = useRouter();
 
   const formattedDate = ticket
-    ? dayjs(ticket.createdAT).format("DD/MM/YY hh:mm A")
+    ? dayjs(ticket.createdAt).format("DD/MM/YY hh:mm A")
     : null;
 
   const form = useForm<TicketFormData>({

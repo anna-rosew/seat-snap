@@ -64,7 +64,7 @@ const DataTable = ({ tickets, searchParams }: Props) => {
                 >
                   Created At
                 </Link>
-                {"createdAT" === searchParams.orderBy && (
+                {"createdAt" === searchParams.orderBy && (
                   <ArrowDown className="inline p-1" />
                 )}
               </TableHead>
@@ -88,7 +88,7 @@ const DataTable = ({ tickets, searchParams }: Props) => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {ticket.createdAT.toLocaleDateString("en-US", {
+                      {ticket.createdAt.toLocaleDateString("en-US", {
                         year: "2-digit",
                         month: "2-digit",
                         day: "2-digit",
