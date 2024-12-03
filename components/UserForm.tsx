@@ -33,6 +33,12 @@ const UserForm = ({ user }: Props) => {
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
+    defaultValues: {
+      name: user?.name || "",
+      username: user?.username || "",
+      password: "", // Password is empty for new users
+      role: user?.role || "USER", // Default role
+    },
   });
 
   async function onSubmit(values: UserFormData) {
@@ -46,7 +52,7 @@ const UserForm = ({ user }: Props) => {
         await axios.post("/api/users", values);
       }
 
-      router.push("/users");
+      router.push("/tickets");
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -66,15 +72,12 @@ const UserForm = ({ user }: Props) => {
           <FormField
             control={form.control}
             name="name"
+            defaultValue={user?.name || ""}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input
-                    defaultValue={user?.name}
-                    placeholder="Enter Users Full Name..."
-                    {...field}
-                  />
+                  <Input placeholder="Enter Users Full Name..." {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -82,15 +85,12 @@ const UserForm = ({ user }: Props) => {
           <FormField
             control={form.control}
             name="username"
+            defaultValue={user?.username || ""}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Enter Username..."
-                    {...field}
-                    defaultValue={user?.username}
-                  />
+                  <Input placeholder="Enter Username..." {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -98,6 +98,7 @@ const UserForm = ({ user }: Props) => {
           <FormField
             control={form.control}
             name="password"
+            defaultValue=""
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Password</FormLabel>
@@ -107,7 +108,6 @@ const UserForm = ({ user }: Props) => {
                     required={user ? false : true}
                     placeholder="Enter password..."
                     {...field}
-                    defaultValue=""
                   />
                 </FormControl>
               </FormItem>
@@ -117,19 +117,14 @@ const UserForm = ({ user }: Props) => {
             <FormField
               control={form.control}
               name="role"
+              defaultValue={user?.role}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue
-                          placeholder="Role..."
-                          defaultValue={user?.role}
-                        />
+                        <SelectValue placeholder="Role..." />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>

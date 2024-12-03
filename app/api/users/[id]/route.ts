@@ -9,7 +9,6 @@ interface Props {
 
 export async function PATCH(request: NextRequest, { params }: Props) {
   const body = await request.json();
-
   const validation = userSchema.safeParse(body);
 
   if (!validation.success) {
@@ -21,18 +20,21 @@ export async function PATCH(request: NextRequest, { params }: Props) {
   });
 
   if (!user) {
-    return NextResponse.json({ error: "User Not Found" }, { status: 400 });
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
 
-  if (body?.password) {
+  if (body?.password && body.password != "") {
     const hashPassword = await bcrypt.hash(body.password, 10);
     body.password = hashPassword;
+  } else {
+    delete body.password;
   }
-
+  
   if (user.username !== body.username) {
     const duplicateUsername = await prisma.user.findUnique({
-      where: { username: body.user },
+      where: { username: body.username },
     });
+
     if (duplicateUsername) {
       return NextResponse.json(
         { message: "Duplicate Username" },
@@ -40,11 +42,11 @@ export async function PATCH(request: NextRequest, { params }: Props) {
       );
     }
   }
+
   const updateUser = await prisma.user.update({
     where: { id: user.id },
-    data: {
-      ...body,
-    },
+    data: { ...body },
   });
-  return NextResponse.json(updateUser);
+
+  return NextResponse.json(updateUser, { status: 200 });
 }
