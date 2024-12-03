@@ -7,8 +7,6 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "./ui/input";
-import SimpleMDE from "react-simplemde-editor";
-import "easymde/dist/easymde.min.css";
 import {
   Select,
   SelectContent,
@@ -20,7 +18,6 @@ import { Button } from "./ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { User } from "@prisma/client";
-import dayjs from "dayjs";
 
 type UserFormData = z.infer<typeof userSchema>;
 
@@ -34,18 +31,8 @@ const UserForm = ({ user }: Props) => {
 
   const router = useRouter();
 
-  const formattedDate = ticket
-    ? dayjs(ticket.createdAt).format("DD/MM/YY hh:mm A")
-    : null;
-
   const form = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
-    defaultValues: {
-      title: ticket?.title || "",
-      description: ticket?.description || "",
-      status: ticket?.status || "OPEN",
-      priority: ticket?.priority || "LOW",
-    },
   });
 
   async function onSubmit(values: UserFormData) {
@@ -78,67 +65,77 @@ const UserForm = ({ user }: Props) => {
         >
           <FormField
             control={form.control}
-            name="title"
+            name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Ticket Title</FormLabel>
+                <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ticket Title..." {...field} />
+                  <Input
+                    defaultValue={user?.name}
+                    placeholder="Enter Users Full Name..."
+                    {...field}
+                  />
                 </FormControl>
               </FormItem>
             )}
           />
           <FormField
             control={form.control}
-            name="description"
+            name="username"
             render={({ field }) => (
-              <SimpleMDE placeholder="Description" {...field} />
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter Username..."
+                    {...field}
+                    defaultValue={user?.username}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    required={user ? false : true}
+                    placeholder="Enter password..."
+                    {...field}
+                    defaultValue=""
+                  />
+                </FormControl>
+              </FormItem>
             )}
           />
           <div className="flex w-full space-x-4">
             <FormField
               control={form.control}
-              name="status"
+              name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>Role</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Status..." />
+                        <SelectValue
+                          placeholder="Role..."
+                          defaultValue={user?.role}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="OPEN">Open</SelectItem>
-                      <SelectItem value="STARTED">Started</SelectItem>
-                      <SelectItem value="CLOSED">Closed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Priority..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="LOW">Low</SelectItem>
-                      <SelectItem value="MEDIUM">Medium</SelectItem>
-                      <SelectItem value="HIGH">High</SelectItem>
+                      <SelectItem value="USER">User</SelectItem>
+                      <SelectItem value="TECH">Tech</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>
@@ -146,14 +143,11 @@ const UserForm = ({ user }: Props) => {
             />
           </div>
           <Button type="submit" disabled={isSubmitting}>
-            {ticket ? "Update Ticket" : "Create Ticket"}
+            {user ? "Update User" : "Create User"}
           </Button>
         </form>
       </Form>
       <p className="text-destructive">{error}</p>
-      {formattedDate && (
-        <p className="text-sm text-muted">Created at: {formattedDate}</p>
-      )}
     </div>
   );
 };

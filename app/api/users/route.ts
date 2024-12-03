@@ -5,27 +5,28 @@ import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
+
   const validation = userSchema.safeParse(body);
 
   if (!validation.success) {
-    return NextRequest.json(validation.error.format(), { status: 400 });
+    return NextResponse.json(validation.error.format(), { status: 400 });
   }
 
   const duplicate = await prisma.user.findUnique({
-    where: {
-      username: body.username,
-    },
+    where: { username: body.username },
   });
 
   if (duplicate) {
-    return NextRequest.json({ message: "Duplicate Username" }, { status: 409 });
+    return NextResponse.json(
+      { message: "Duplicate Username" },
+      { status: 409 }
+    );
   }
 
   const hashPassword = await bcrypt.hash(body.password, 10);
-  body.password = hashPassword;
 
-  const newUser = await prisma.create({
-    data: { ...body },
+  const newUser = await prisma.user.create({
+    data: { ...body, password: hashPassword },
   });
 
   return NextResponse.json(newUser, { status: 201 });
