@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
+import { User } from "@prisma/client";
 
 interface Props {
   users: User[];

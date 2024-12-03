@@ -1,4 +1,4 @@
-import { ticketSchema } from "@/ValidationSchemas/ticket";
+import { ticketPatchSchema } from "@/ValidationSchemas/ticket";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prisma/db";
 
@@ -12,7 +12,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     const body = await request.json();
 
     // Validate the data using the schema
-    const validation = ticketSchema.safeParse(body);
+    const validation = ticketPatchSchema.safeParse(body);
 
     if (!validation.success) {
       return NextResponse.json(validation.error.format(), { status: 400 });
@@ -27,6 +27,10 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
     // Find the ticket by ID
     const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+
+    if (body?.assignedToUserId) {
+      body.assignedToUserId = parseInt(body.assignedToUserId);
+    }
 
     if (!ticket) {
       return NextResponse.json({ error: "Ticket Not Found" }, { status: 404 });
