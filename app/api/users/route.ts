@@ -6,6 +6,8 @@ import { getServerSession } from "next-auth";
 import options from "../auth/[...nextauth]/options";
 
 export async function POST(request: NextRequest) {
+  const body = await request.json();
+
   const session = await getServerSession(options);
 
   if (!session) {
@@ -17,8 +19,6 @@ export async function POST(request: NextRequest) {
   }
 
   console.log(session);
-
-  const body = await request.json();
 
   const validation = userSchema.safeParse(body);
 

@@ -6,11 +6,9 @@ import options from "../auth/[...nextauth]/options";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(options);
-
   if (!session) {
     return NextResponse.json({ error: "Not Authenticated" }, { status: 401 });
   }
-  
   const body = await request.json();
   const validation = ticketSchema.safeParse(body);
 
@@ -24,3 +22,10 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(newTicket, { status: 201 });
 }
+
+/*
+
+import { getServerSession } from "next-auth";
+import options from "../auth/[...nextauth]/options";
+
+*/
