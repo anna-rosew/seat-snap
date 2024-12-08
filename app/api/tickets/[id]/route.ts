@@ -1,6 +1,6 @@
-import { ticketPatchSchema } from "@/ValidationSchemas/ticket";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prisma/db";
+import { ticketPatchSchema } from "@/ValidationSchemas/ticket";
 
 /**
  * Handles the PATCH request to update a ticket.
@@ -10,6 +10,13 @@ export async function PATCH(
   context: { params: { id: string } }
 ) {
   try {
+    // Extract the `id` from `context.params`
+    const ticketId = parseInt(context.params.id, 10);
+
+    if (isNaN(ticketId)) {
+      return NextResponse.json({ error: "Invalid Ticket ID" }, { status: 400 });
+    }
+
     // Parse the request body
     const body = await request.json();
 
@@ -18,13 +25,6 @@ export async function PATCH(
 
     if (!validation.success) {
       return NextResponse.json(validation.error.format(), { status: 400 });
-    }
-
-    // Extract the `id` from params
-    const ticketId = parseInt(context.params.id, 10);
-
-    if (isNaN(ticketId)) {
-      return NextResponse.json({ error: "Invalid Ticket ID" }, { status: 400 });
     }
 
     // Find the ticket by ID
@@ -64,7 +64,7 @@ export async function DELETE(
   context: { params: { id: string } }
 ) {
   try {
-    // Extract the `id` from params
+    // Extract the `id` from `context.params`
     const ticketId = parseInt(context.params.id, 10);
 
     if (isNaN(ticketId)) {
