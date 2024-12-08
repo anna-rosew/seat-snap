@@ -4,7 +4,7 @@ import DashChart from "@/components/DashChart";
 import DashRecentTickets from "@/components/DashRecentTickets";
 
 const Dashboard = async () => {
-  const tickets = await prisma.ticket.findMany({
+  const ticket = await prisma.ticket.findMany({
     where: {
       NOT: [{ status: "CLOSED" }],
     },
@@ -18,13 +18,20 @@ const Dashboard = async () => {
     },
   });
 
-  const groupTickets = await prisma.ticket.groupBy({
+  const groupTicket = await prisma.ticket.groupBy({
     by: ["status"],
     _count: {
       id: true,
     },
   });
-  console.log(groupTickets);
+
+  const data = groupTicket.map((item) => {
+    return {
+      name: item.status,
+      total: item._count.id,
+    };
+  });
+
   return (
     <div>
       <div className="grid gap-4 md:grid-cols-2 px-2">
@@ -32,7 +39,7 @@ const Dashboard = async () => {
           <DashRecentTickets tickets={ticket} />
         </div>
         <div>
-          <DashChart />
+          <DashChart data={data} />
         </div>
       </div>
     </div>
