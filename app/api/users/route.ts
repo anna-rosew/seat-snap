@@ -2,8 +2,8 @@ import { userSchema } from "@/ValidationSchemas/user";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prisma/db";
 import bcrypt from "bcryptjs";
-import { getServerSession } from "next-auth";
-import options from "../auth/[...nextauth]/options";
+// import { getServerSession } from "next-auth";
+// import options from "../auth/[...nextauth]/options";
 
 export async function POST(request: NextRequest) {
   // const session = await getServerSession(options);
