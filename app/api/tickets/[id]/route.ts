@@ -2,10 +2,12 @@ import { ticketPatchSchema } from "@/ValidationSchemas/ticket";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prisma/db";
 
-// PATCH route handler
+/**
+ * Handles the PATCH request to update a ticket.
+ */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     // Parse the request body
@@ -18,8 +20,8 @@ export async function PATCH(
       return NextResponse.json(validation.error.format(), { status: 400 });
     }
 
-    // Parse the `id` from params
-    const ticketId = parseInt(params.id, 10);
+    // Extract the `id` from params
+    const ticketId = parseInt(context.params.id, 10);
 
     if (isNaN(ticketId)) {
       return NextResponse.json({ error: "Invalid Ticket ID" }, { status: 400 });
@@ -28,12 +30,12 @@ export async function PATCH(
     // Find the ticket by ID
     const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
-    if (body?.assignedToUserId) {
-      body.assignedToUserId = parseInt(body.assignedToUserId);
-    }
-
     if (!ticket) {
       return NextResponse.json({ error: "Ticket Not Found" }, { status: 404 });
+    }
+
+    if (body?.assignedToUserId) {
+      body.assignedToUserId = parseInt(body.assignedToUserId, 10);
     }
 
     // Update the ticket
@@ -54,14 +56,16 @@ export async function PATCH(
   }
 }
 
-// DELETE route handler
+/**
+ * Handles the DELETE request to delete a ticket.
+ */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    // Parse the `id` from params
-    const ticketId = parseInt(params.id, 10);
+    // Extract the `id` from params
+    const ticketId = parseInt(context.params.id, 10);
 
     if (isNaN(ticketId)) {
       return NextResponse.json({ error: "Invalid Ticket ID" }, { status: 400 });
@@ -77,7 +81,7 @@ export async function DELETE(
     // Delete the ticket
     await prisma.ticket.delete({ where: { id: ticketId } });
 
-    return NextResponse.json({ message: "Ticket Deleted" });
+    return NextResponse.json({ message: "Ticket Deleted" }, { status: 200 });
   } catch (error) {
     console.error("Error deleting ticket:", error);
     return NextResponse.json(
